@@ -1,8 +1,6 @@
 package com.incorta.essbaseutils;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.security.Key;
 import java.util.logging.Level;
 
@@ -37,14 +35,16 @@ public class EsbDataQuery {
 	private static IEssMdDataSet esbDataSet = null;
 	private static int querycubeerror=0;
 	private static Key esbSecKey = null;
-	private static String basepath = null;
+	private static String expFile = null;
 	
 	public static void main(String[] args) throws Exception {
-		
+
+		/*
 		// Get the jar file location	
 		String path1 = EsbFunctions.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		File jarfile = new File(URLDecoder.decode(path1,"UTF-8"));
-		basepath = jarfile.getParentFile().getPath();
+		jarfile.getParentFile().getPath();
+		*/
 		
 		// create the command line parser
 		CommandLineParser parser = new GnuParser();
@@ -103,6 +103,11 @@ public class EsbDataQuery {
 	    OptionBuilder.withDescription("Delimiter character");
 		options.addOption(OptionBuilder.create("delimiter"));		
 		
+		OptionBuilder.withArgName("-fileName=fileName");
+	    OptionBuilder.hasArg(true);
+	    OptionBuilder.withDescription("Full File name for export");
+		options.addOption(OptionBuilder.create("fileName"));		
+		
 		OptionBuilder.withArgName("-encrypt=<encryptstring>");
 		OptionBuilder.hasArg(true);
 		OptionBuilder.withDescription("Use this for encrypting strings");
@@ -129,7 +134,7 @@ public class EsbDataQuery {
 			String encryptstring = line.getOptionValue("encrypt");
 			line = parser.parse(options, encryptstring.split(" "));
 			if(line.hasOption("key")){
-				if(line.hasOption("u") && line.hasOption("p") && line.hasOption("App") && line.hasOption("Db") && line.hasOption("getData") && line.hasOption("MDX")){
+				if(line.hasOption("u") && line.hasOption("p") && line.hasOption("App") && line.hasOption("Db") && line.hasOption("getData") && line.hasOption("MDX") && line.hasOption("fileName")){
 						System.out.println(AESencryption.encrypt(encryptstring,esbSecKey));    		
 			    } else {
 			    	System.out.println(generalFunction.getCurrentTimeStamp() + " Provide all required parameters.");
@@ -155,7 +160,7 @@ public class EsbDataQuery {
 			
 		EsbFunctions essbaseFunction = new EsbFunctions();
 	
-	    if(line.hasOption("u") && line.hasOption("p") && line.hasOption("App") && line.hasOption("Db") && line.hasOption("getData") && line.hasOption("MDX")){
+	    if(line.hasOption("u") && line.hasOption("p") && line.hasOption("App") && line.hasOption("Db") && line.hasOption("getData") && line.hasOption("MDX") && line.hasOption("fileName")){
 
     		ODLLogger logger = ODLLogger.getODLLogger("oracle.EPMOHPS");
 			logger.setLevel(Level.SEVERE);
@@ -167,14 +172,11 @@ public class EsbDataQuery {
 	    	DbName = line.getOptionValue( "Db" );
 	    	MDXQuery = line.getOptionValue( "MDX");
 	    	Delimiter = line.getOptionValue( "delimiter");
+	    	expFile = line.getOptionValue( "fileName");
 	    	
 	    	boolean needCellAttributes = false;
 			boolean hideRestrictedData = true;
 			EEssMemberIdentifierType idtype = IEssOpMdxQuery.EEssMemberIdentifierType.NAME; 
-/*			
-			MDXDataExport export = new MDXDataExport();
-			export.exportToFile(user, password, false, basepath+"\\data\\EssbaseExport.txt", AppName, DbName, SvrName, MDXQuery, null);
-*/
 
 	    	try {
 				ess = IEssbase.Home.create(IEssbase.JAPI_VERSION);
@@ -217,10 +219,10 @@ public class EsbDataQuery {
 					System.out.println(generalFunction.getCurrentTimeStamp() + " Export MDX output to file.");
 			    	try {
 			    		if(Delimiter == null){
-			    			essbaseFunction.exportQuery(esbDataSet,"\t",basepath);
+			    			essbaseFunction.exportQuery(esbDataSet,"\t",expFile);
 			    			System.out.println(generalFunction.getCurrentTimeStamp() + " Export completed.");
 			    		} else {
-			    			essbaseFunction.exportQuery(esbDataSet,Delimiter,basepath);
+			    			essbaseFunction.exportQuery(esbDataSet,Delimiter,expFile);
 			    			System.out.println(generalFunction.getCurrentTimeStamp() + " Export completed.");
 			    		}
 					} catch (EssException | IOException printdataerr) {
@@ -228,10 +230,9 @@ public class EsbDataQuery {
 						printdataerr.printStackTrace(essbaseFunction.printStream);
 					}
 				}
+		    	essbaseFunction.printStream.close();
 	    	}
-	    	
-	    	essbaseFunction.printStream.close();
-	    	
+	    	    	
 	    	
 	    } else {
 	    	

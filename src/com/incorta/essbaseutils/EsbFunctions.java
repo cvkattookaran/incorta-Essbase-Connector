@@ -61,13 +61,13 @@ public class EsbFunctions{
 		return dataSet;
 	}
 	
-	protected void exportQuery (IEssMdDataSet dataSet, String delim,String basepath) throws EssException, IOException{
+	protected void exportQuery (IEssMdDataSet dataSet, String delim,String fileName) throws EssException, IOException{
 		
 		IEssMdAxis[] axes = dataSet.getAllAxes();
 		int axesCnt =axes.length;
 		IEssMdMember[] povdims = axes[0].getAllDimensions();
 	
-		printStream = new PrintStream(basepath+"\\data\\EssbaseExport.txt", "UTF-8");
+		printStream = new PrintStream(fileName, "UTF-8");
 		
 		ArrayList<String> povdimnames = new ArrayList<String>();
 		ArrayList<String> rowdimnames = new ArrayList<String>();
